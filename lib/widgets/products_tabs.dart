@@ -1,16 +1,19 @@
 //widgets/products_tabs.dart
 import 'package:flutter/material.dart';
+import '../data/cart_state_inherited.dart';
 import '../data/products.dart';
 import 'cart_page.dart';
 import 'products_list.dart';
+import '../data/products.dart';
 
 class ProductsCartTabBar extends StatelessWidget {
-  const ProductsCartTabBar({
-    Key? key,
-  }) : super(key: key);
-
   @override
   Widget build(BuildContext context) {
+    final CartStateInherited cartStateInherited =
+    CartStateInherited.of(context);
+    final cartProducts = cartStateInherited.cartContentList;
+    final addToCart = cartStateInherited.addToCart;
+    final removeFromCart = cartStateInherited.removeFromCart;
     return DefaultTabController(
       length: 2,
       child: Column(
@@ -25,7 +28,7 @@ class ProductsCartTabBar extends StatelessWidget {
               ),
               Tab(
                 icon: Badge.count(
-                  count: 0,
+                  count: cartProducts.length,
                   backgroundColor: Colors.teal,
                   child: Icon(Icons.shopping_cart),
                 ),
@@ -35,8 +38,14 @@ class ProductsCartTabBar extends StatelessWidget {
           ),
           Expanded(
             child: TabBarView(children: [
-              ProductsList(products: products,),
-              CartPage(),
+              ProductsList(
+                products: products,
+                addToCart: addToCart,
+              ),
+              CartPage(
+                productsInCart: cartProducts,
+                removeFromCart: removeFromCart,
+              ),
             ]),
           ),
         ],
@@ -44,3 +53,5 @@ class ProductsCartTabBar extends StatelessWidget {
     );
   }
 }
+
+

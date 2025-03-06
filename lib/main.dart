@@ -1,8 +1,12 @@
 // main.dart
 import 'package:flutter/material.dart';
+import 'data/cart_state_inherited.dart';
 import 'widgets/products_tabs.dart';
 import 'widgets/settings_page.dart';
 import 'widgets/wishlist_page.dart';
+import 'package:lab6/data/settings_state_provider.dart';
+import 'package:provider/provider.dart';
+import '../data/products.dart';
 
 void main() {
   runApp(const MyApp());
@@ -13,14 +17,22 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return MultiProvider(
+        providers: [
+        ChangeNotifierProvider<FilterProductsModel>(
+        create: (_) => FilterProductsModel(),
+    ),
+    ],
+    child: MaterialApp(
       title: 'Shopping App',
       theme: ThemeData(
         primarySwatch: Colors.blue,
         useMaterial3: false,
       ),
       home: const MyHomePage(title: 'Shopping App'),
+    )
     );
+
   }
 }
 
@@ -34,6 +46,18 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  final cartProducts = products.sublist(0, 3).toList();
+  void addToCart(Product product) {
+    setState(() {
+      cartProducts.add(product);
+    });
+  }
+  void removeFromCart(Product product) {
+    setState(() {
+      cartProducts.remove(product);
+    });
+  }
+
   int _selectedIndex = 0;
 
   void _onItemTapped(int index) {
@@ -42,7 +66,7 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
-  final _screens = const [
+  final _screens =  [
     ProductsCartTabBar(),
     WishList(),
   ];
@@ -76,7 +100,12 @@ class _MyHomePageState extends State<MyHomePage> {
           ],
         ),
       ),
-      body: _screens[_selectedIndex],
+      body: CartStateInherited(
+        cartContentList: cartProducts,
+        addToCart: addToCart,
+        removeFromCart: removeFromCart,
+        child: _screens[_selectedIndex],
+      ),
       bottomNavigationBar: BottomNavigationBar(
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
