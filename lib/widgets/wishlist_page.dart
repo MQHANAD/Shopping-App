@@ -1,16 +1,42 @@
 // widgets/wishlist_page.dart
 import 'package:flutter/material.dart';
-import 'package:flutter/material.dart';
-import 'package:lab6/data/products.dart';
-import '../data/products.dart';
+import 'package:provider/provider.dart';
+import '../data/wishlist_state_provider.dart';
+
 
 class WishList extends StatelessWidget {
   const WishList({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return const Center(
-      child: Text('Wishlist'),
+    return Consumer<WishlistStateProvider>(
+      builder: (context, wishlistProvider, child) {
+        // If the wishlist is empty, show a message
+        if (wishlistProvider.wishlist.isEmpty) {
+          return const Center(
+            child: Text('Your wishlist is empty.'),
+          );
+        }
+
+        // Otherwise, display the wishlist using a ListView
+        return ListView.builder(
+          itemCount: wishlistProvider.wishlist.length,
+          itemBuilder: (context, index) {
+            final product = wishlistProvider.wishlist[index];
+            return ListTile(
+              leading: Image.network(product.imageUrl), // Display product image
+              title: Text(product.name), // Display product name
+              trailing: IconButton(
+                icon: const Icon(Icons.remove_circle_outline),
+                onPressed: () {
+                  // Remove the product from the wishlist
+                  wishlistProvider.removeFromWishlist(product);
+                },
+              ),
+            );
+          },
+        );
+      },
     );
   }
 }

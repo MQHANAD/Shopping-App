@@ -1,6 +1,8 @@
-//widgets/detail_page.dart
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../data/products.dart';
+import '../data/wishlist_state_provider.dart';
+
 
 class DetailPage extends StatelessWidget {
   final Product product;
@@ -11,6 +13,9 @@ class DetailPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Access the WishlistStateProvider
+    final wishlistProvider = Provider.of<WishlistStateProvider>(context, listen: false);
+
     return Scaffold(
       appBar: AppBar(
         title: Text(product.name),
@@ -23,18 +28,23 @@ class DetailPage extends StatelessWidget {
             children: [
               Image.network(product.imageUrl),
               const SizedBox(height: 16),
-              Text(product.description,
-                  style: const TextStyle(fontSize: 20)),
-              const SizedBox(height: 16),
-              // TODO: Add a button to add the product to wishlist
+              Text(
+                product.description,
+                style: const TextStyle(fontSize: 20),
+              ),
+              OutlinedButton(
+                key: const Key('add_to_wishlist'), // Add a key
+                onPressed: () {
+                  // Add the product to the wishlist
+                  wishlistProvider.addToWishlist(product);
+                  // Navigate back to the previous screen
+                  Navigator.pop(context);
+                },
+                child: const Text('Add to Wishlist'),
+              ),
+
               ElevatedButton(
                 child: const Text('Add to Cart'),
-                onPressed: () {
-                  Navigator.pop(context, product);
-                },
-              ),
-              ElevatedButton(
-                child: const Text('Add to wishlist'),
                 onPressed: () {
                   Navigator.pop(context, product);
                 },

@@ -1,12 +1,14 @@
 // main.dart
 import 'package:flutter/material.dart';
 import 'data/cart_state_inherited.dart';
+import 'data/wishlist_state_provider.dart';
 import 'widgets/products_tabs.dart';
 import 'widgets/settings_page.dart';
 import 'widgets/wishlist_page.dart';
 import 'package:lab6/data/settings_state_provider.dart';
 import 'package:provider/provider.dart';
 import '../data/products.dart';
+import 'package:badges/badges.dart' as badges;
 
 void main() {
   runApp(const MyApp());
@@ -19,20 +21,21 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
         providers: [
-        ChangeNotifierProvider<FilterProductsModel>(
-        create: (_) => FilterProductsModel(),
-    ),
-    ],
-    child: MaterialApp(
-      title: 'Shopping App',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-        useMaterial3: false,
-      ),
-      home: const MyHomePage(title: 'Shopping App'),
-    )
-    );
-
+          ChangeNotifierProvider<FilterProductsModel>(
+            create: (_) => FilterProductsModel(),
+          ),
+          ChangeNotifierProvider<WishlistStateProvider>(
+            create: (_) => WishlistStateProvider(), // Add WishlistStateProvider
+          ),
+        ],
+        child: MaterialApp(
+          title: 'Shopping App',
+          theme: ThemeData(
+            primarySwatch: Colors.blue,
+            useMaterial3: false,
+          ),
+          home: const MyHomePage(title: 'Shopping App'),
+        ));
   }
 }
 
@@ -47,18 +50,19 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   final cartProducts = products.sublist(0, 3).toList();
+  int _selectedIndex = 0;
+
   void addToCart(Product product) {
     setState(() {
       cartProducts.add(product);
     });
   }
+
   void removeFromCart(Product product) {
     setState(() {
       cartProducts.remove(product);
     });
   }
-
-  int _selectedIndex = 0;
 
   void _onItemTapped(int index) {
     setState(() {
@@ -66,13 +70,16 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
-  final _screens =  [
+  final _screens = [
     ProductsCartTabBar(),
     WishList(),
   ];
 
   @override
   Widget build(BuildContext context) {
+    // Access the WishlistStateProvider
+    final wishlistProvider = Provider.of<WishlistStateProvider>(context);
+
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.title),
@@ -92,9 +99,12 @@ class _MyHomePageState extends State<MyHomePage> {
               title: const Text('Settings'),
               onTap: () {
                 Navigator.pop(context);
-                Navigator.push(context, MaterialPageRoute(builder: (context) {
-                  return SettingsPage();
-                }));
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) =>  SettingsPage(),
+                  ),
+                );
               },
             ),
           ],
@@ -107,13 +117,20 @@ class _MyHomePageState extends State<MyHomePage> {
         child: _screens[_selectedIndex],
       ),
       bottomNavigationBar: BottomNavigationBar(
-        items: const <BottomNavigationBarItem>[
-          BottomNavigationBarItem(
+        items: [
+          const BottomNavigationBarItem(
             icon: Icon(Icons.home),
             label: 'Products',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.favorite),
+            icon: badges.Badge(
+              key: const Key('wishlist_badge'), // Add a key
+              badgeContent: Text(
+                wishlistProvider.wishlist.length.toString(), // Number of items in the wishlist
+                style: const TextStyle(color: Colors.white),
+              ),
+              child: const Icon(Icons.favorite), // Wishlist icon
+            ),
             label: 'Wishlist',
           ),
         ],
